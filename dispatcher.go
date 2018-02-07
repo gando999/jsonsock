@@ -96,15 +96,19 @@ func CallFuncByName(targetImpl interface{}, funcName string, params ...interface
 	}
 	in := make([]reflect.Value, len(params))
 	for i, param := range params {
-		argType := m.Type().In(i)
-		tStruct := reflect.New(argType).Interface()
-		paramMap := reflect.ValueOf(param).Interface()
-		err := fillStruct(tStruct, paramMap.(map[string]interface{}))
-		if err == nil {
-			in[i] = reflect.Indirect(reflect.ValueOf(tStruct))
+		switch reflect.ValueOf(param).Interface().(type) {
+		case float64:
+			in[i] = reflect.ValueOf(param)
+		default:
+			argType := m.Type().In(i)
+			tStruct := reflect.New(argType).Interface()
+			paramMap := reflect.ValueOf(param).Interface()
+			err := fillStruct(tStruct, paramMap.(map[string]interface{}))
+			if err == nil {
+				in[i] = reflect.Indirect(reflect.ValueOf(tStruct))
+			}
 		}
 	}
-
 	out = m.Call(in)
 	return
 }
