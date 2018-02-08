@@ -30,7 +30,7 @@ func (simpleClient *SimpleClient) Send(targetFunc string, params []interface{}) 
 	checkError(err)
 
 	message, _ := bufio.NewReader(simpleClient.tcpConn).ReadString('\n')
-	fmt.Print("Response " + message)
+	fmt.Print(message)
 
 	os.Exit(0)
 }

@@ -85,6 +85,21 @@ func fillStruct(s interface{}, m map[string]interface{}) error {
 	return nil
 }
 
+func CreateParameter(method reflect.Value, param interface{}, argType reflect.Type) reflect.Value {
+	switch v := reflect.ValueOf(param).Interface().(type) {
+	case float64, string, int:
+		return reflect.ValueOf(param)
+	case map[string]interface{}:
+		tStruct := reflect.New(argType).Interface()
+		paramMap := reflect.ValueOf(param).Interface()
+		fillStruct(tStruct, paramMap.(map[string]interface{})) //check error
+		return reflect.Indirect(reflect.ValueOf(tStruct))
+	default:
+		fmt.Printf("Unknown type %T!\n", v)
+		return reflect.Zero(argType)
+	}
+}
+
 func CallFuncByName(targetImpl interface{}, funcName string, params ...interface{}) (out []reflect.Value, err error) {
 	m := reflect.ValueOf(targetImpl).MethodByName(funcName)
 	if !m.IsValid() {
@@ -92,27 +107,18 @@ func CallFuncByName(targetImpl interface{}, funcName string, params ...interface
 	}
 	in := make([]reflect.Value, len(params))
 	for i, param := range params {
-		switch v := reflect.ValueOf(param).Interface().(type) {
-		case float64, string, int:
-			in[i] = reflect.ValueOf(param)
+		switch reflect.ValueOf(param).Interface().(type) {
 		case []interface{}:
 			argType := m.Type().In(i)
 			tList := reflect.Indirect(reflect.New(argType))
 			paramList := reflect.ValueOf(param).Interface().([]interface{})
 			for _, sliceElement := range paramList {
-				tList.Set(reflect.Append(tList, reflect.ValueOf(sliceElement)))
+				tList.Set(reflect.Append(tList, CreateParameter(m, sliceElement, argType.Elem())))
 			}
 			in[i] = tList
-		case map[string]interface{}:
-			argType := m.Type().In(i)
-			tStruct := reflect.New(argType).Interface()
-			paramMap := reflect.ValueOf(param).Interface()
-			err := fillStruct(tStruct, paramMap.(map[string]interface{}))
-			if err == nil {
-				in[i] = reflect.Indirect(reflect.ValueOf(tStruct))
-			}
 		default:
-			fmt.Printf("Unknown type %T!\n", v)
+			argType := m.Type().In(i)
+			in[i] = CreateParameter(m, param, argType)
 		}
 	}
 	out = m.Call(in)
