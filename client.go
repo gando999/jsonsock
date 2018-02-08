@@ -22,17 +22,13 @@ func CreateClient(connection string) *SimpleClient {
 	return c
 }
 
-func (simpleClient *SimpleClient) Send(targetFunc string, params []interface{}) {
+func (simpleClient *SimpleClient) Send(targetFunc string, params []interface{}) string {
 	req, err := MarshalRequest(targetFunc, params)
 	checkError(err)
-
 	fmt.Fprintf(simpleClient.tcpConn, req+"\n")
 	checkError(err)
-
 	message, _ := bufio.NewReader(simpleClient.tcpConn).ReadString('\n')
-	fmt.Print(message)
-
-	os.Exit(0)
+	return message
 }
 
 func checkError(err error) {
