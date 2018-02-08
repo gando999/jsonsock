@@ -17,6 +17,11 @@ type Domain struct {
 	Message string
 }
 
+type Nested struct {
+	Dom     Domain
+	Message string
+}
+
 func (testing *Testing) SayHello(user string) string {
 	return fmt.Sprintf("Hello from %s", user)
 }
@@ -46,6 +51,12 @@ func (testing *Testing) StructSlice(structs []Domain) Domain {
 	return d
 }
 
+func (testing *Testing) UseNested(nested Nested) Nested {
+	nested.Dom.Message = "I was nested inner"
+	nested.Message = "I was nested outer"
+	return nested
+}
+
 func sendRequest(method string, args []interface{}) {
 	client := jsonsock.CreateClient(Target)
 	fmt.Println(client.Send(method, args))
@@ -71,6 +82,10 @@ func main() {
 	sendRequest("testing.UseMix", []interface{}{floats, "Man alive!", m})
 
 	sendRequest("testing.StructSlice", []interface{}{[]Domain{d}})
+
+	d.Message = "Inner nested"
+	x := Nested{d, "Outer nested"}
+	sendRequest("testing.UseNested", []interface{}{x})
 }
 
 func startServer() {
