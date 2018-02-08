@@ -59,22 +59,18 @@ func (dispatcher Dispatcher) RegisterImpl(namespace string, targetImpl interface
 func setField(obj interface{}, name string, value interface{}) error {
 	structValue := reflect.ValueOf(obj).Elem()
 	structFieldValue := structValue.FieldByName(name)
-
 	if !structFieldValue.IsValid() {
 		return fmt.Errorf("No such field: %s in obj", name)
 	}
-
 	if !structFieldValue.CanSet() {
 		return fmt.Errorf("Cannot set %s field value", name)
 	}
-
 	structFieldType := structFieldValue.Type()
 	val := reflect.ValueOf(value)
 	if structFieldType != val.Type() {
 		invalidTypeError := errors.New("Provided value type didn't match obj field type")
 		return invalidTypeError
 	}
-
 	structFieldValue.Set(val)
 	return nil
 }
@@ -96,10 +92,18 @@ func CallFuncByName(targetImpl interface{}, funcName string, params ...interface
 	}
 	in := make([]reflect.Value, len(params))
 	for i, param := range params {
-		switch reflect.ValueOf(param).Interface().(type) {
-		case float64:
+		switch v := reflect.ValueOf(param).Interface().(type) {
+		case float64, string, int:
 			in[i] = reflect.ValueOf(param)
-		default:
+		case []interface{}:
+			argType := m.Type().In(i)
+			tList := reflect.Indirect(reflect.New(argType))
+			paramList := reflect.ValueOf(param).Interface().([]interface{})
+			for _, sliceElement := range paramList {
+				tList.Set(reflect.Append(tList, reflect.ValueOf(sliceElement)))
+			}
+			in[i] = tList
+		case map[string]interface{}:
 			argType := m.Type().In(i)
 			tStruct := reflect.New(argType).Interface()
 			paramMap := reflect.ValueOf(param).Interface()
@@ -107,6 +111,8 @@ func CallFuncByName(targetImpl interface{}, funcName string, params ...interface
 			if err == nil {
 				in[i] = reflect.Indirect(reflect.ValueOf(tStruct))
 			}
+		default:
+			fmt.Printf("Unknown type %T!\n", v)
 		}
 	}
 	out = m.Call(in)
