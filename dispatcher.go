@@ -75,7 +75,7 @@ func setField(obj interface{}, name string, value interface{}) error {
 	return nil
 }
 
-func fillStruct(s interface{}, m map[string]interface{}) error {
+func FillStruct(s interface{}, m map[string]interface{}) error {
 	for k, v := range m {
 		err := setField(s, k, v)
 		if err != nil {
@@ -92,7 +92,7 @@ func CreateParameter(method reflect.Value, param interface{}, argType reflect.Ty
 	case map[string]interface{}:
 		tStruct := reflect.New(argType).Interface()
 		paramMap := reflect.ValueOf(param).Interface()
-		fillStruct(tStruct, paramMap.(map[string]interface{})) //check error
+		FillStruct(tStruct, paramMap.(map[string]interface{})) //check error
 		return reflect.Indirect(reflect.ValueOf(tStruct))
 	default:
 		fmt.Printf("Unknown type %T!\n", v)
