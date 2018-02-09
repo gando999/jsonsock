@@ -68,11 +68,20 @@ func setField(obj interface{}, name string, value interface{}) error {
 	structFieldType := structFieldValue.Type()
 	val := reflect.ValueOf(value)
 	if structFieldType != val.Type() {
-		invalidTypeError := errors.New("Provided value type didn't match obj field type")
-		return invalidTypeError
+		switch val.Interface().(type) {
+		case map[string]interface{}:
+			tStruct := reflect.New(structFieldType).Interface()
+			FillStruct(tStruct, val.Interface().(map[string]interface{}))
+			structFieldValue.Set(reflect.Indirect(reflect.ValueOf(tStruct)))
+			return nil
+		default:
+			invalidTypeError := errors.New("Provided value type didn't match obj field type")
+			return invalidTypeError
+		}
+	} else {
+		structFieldValue.Set(val)
+		return nil
 	}
-	structFieldValue.Set(val)
-	return nil
 }
 
 func FillStruct(s interface{}, m map[string]interface{}) error {
