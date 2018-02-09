@@ -71,7 +71,10 @@ func setField(obj interface{}, name string, value interface{}) error {
 		switch val.Interface().(type) {
 		case map[string]interface{}:
 			tStruct := reflect.New(structFieldType).Interface()
-			FillStruct(tStruct, val.Interface().(map[string]interface{}))
+			err := FillStruct(tStruct, val.Interface().(map[string]interface{}))
+			if err != nil {
+				return err
+			}
 			structFieldValue.Set(reflect.Indirect(reflect.ValueOf(tStruct)))
 			return nil
 		default:
@@ -101,7 +104,10 @@ func CreateParameter(method reflect.Value, param interface{}, argType reflect.Ty
 	case map[string]interface{}:
 		tStruct := reflect.New(argType).Interface()
 		paramMap := reflect.ValueOf(param).Interface()
-		FillStruct(tStruct, paramMap.(map[string]interface{})) //check error
+		err := FillStruct(tStruct, paramMap.(map[string]interface{})) //check error
+		if err != nil {
+			return reflect.Zero(argType)
+		}
 		return reflect.Indirect(reflect.ValueOf(tStruct))
 	default:
 		fmt.Printf("Unknown type %T!\n", v)

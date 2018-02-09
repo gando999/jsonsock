@@ -52,8 +52,6 @@ func (testing *Testing) StructSlice(structs []Domain) Domain {
 }
 
 func (testing *Testing) UseNested(nested Nested) Nested {
-	//nested.Dom.Message = "I was nested inner"
-	//nested.Message = "I was nested outer"
 	return nested
 }
 
