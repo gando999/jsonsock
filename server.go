@@ -49,9 +49,10 @@ func handleRequest(conn net.Conn, dispatcher Dispatcher) {
 	if readLen != 0 {
 		request := buf[:readLen]
 		requestJson, err := UnmarshalRequest(string(request))
-		resolved, err := dispatcher.CallFunc(requestJson.Method, requestJson.Params)
+		result := dispatcher.CallFunc(requestJson.Method, requestJson.Params)
+		actual, err := result.GetResult()
 		if err == nil {
-			resp, err := MarshalResponse(resolved[0].Interface())
+			resp, err := MarshalResponse(actual)
 			if err == nil {
 				conn.Write([]byte(resp + "\n"))
 			}

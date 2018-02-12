@@ -9,12 +9,25 @@ import (
 
 type Dispatcher interface {
 	RegisterImpl(namespace string, targetImpl interface{})
-	CallFunc(targetFunc string, funcArgs []interface{}) ([]reflect.Value, error)
+	CallFunc(targetFunc string, funcArgs []interface{}) DispatcherResult
 }
 
 type Registry interface {
 	RegisterImpl(identifier string, impl interface{})
 	FindTargetImpl(identifier string) interface{}
+}
+
+type DispatcherResult interface {
+	GetResult() (interface{}, error)
+}
+
+type CallResult struct {
+	actual []reflect.Value
+	err    error
+}
+
+func (callResult CallResult) GetResult() (interface{}, error) {
+	return callResult.actual[0].Interface(), callResult.err
 }
 
 type DynamicDispatcher struct {
@@ -49,11 +62,12 @@ func (dispatcher DynamicDispatcher) RegisterImpl(namespace string, targetImpl in
 	dispatcher.registry.RegisterImpl(namespace, targetImpl)
 }
 
-func (dispatcher DynamicDispatcher) CallFunc(targetFunc string, funcArgs []interface{}) ([]reflect.Value, error) {
+func (dispatcher DynamicDispatcher) CallFunc(targetFunc string, funcArgs []interface{}) DispatcherResult {
 	s := strings.Split(targetFunc, ".")
 	namespace, funcName := s[0], s[1]
 	targetImpl := dispatcher.registry.FindTargetImpl(namespace)
-	return CallFuncByName(targetImpl, funcName, funcArgs...)
+	rValues, err := CallFuncByName(targetImpl, funcName, funcArgs...)
+	return CallResult{rValues, err}
 }
 
 func setField(obj interface{}, name string, value interface{}) error {
