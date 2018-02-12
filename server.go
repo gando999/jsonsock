@@ -8,7 +8,7 @@ import (
 
 type SimpleServer struct {
 	listener   net.Listener
-	dispatcher *Dispatcher
+	dispatcher *DynamicDispatcher
 }
 
 func CreateServer(connection string) *SimpleServer {
@@ -20,7 +20,7 @@ func CreateServer(connection string) *SimpleServer {
 	}
 	fmt.Println("Listening on " + connection)
 	s.listener = l
-	s.dispatcher = new(Dispatcher)
+	s.dispatcher = new(DynamicDispatcher)
 	s.dispatcher.registry = make(map[string]interface{})
 	return s
 }
@@ -41,7 +41,7 @@ func (simpleServer *SimpleServer) Register(namespace string, targetImpl interfac
 	simpleServer.dispatcher.RegisterImpl(namespace, targetImpl)
 }
 
-func handleRequest(conn net.Conn, dispatcher *Dispatcher) {
+func handleRequest(conn net.Conn, dispatcher Dispatcher) {
 	buf := make([]byte, 1024)
 	readLen, err := conn.Read(buf)
 	if err != nil {
