@@ -124,7 +124,7 @@ func CreateParameter(param interface{}, argType reflect.Type) reflect.Value {
 		if argType.Kind() == reflect.Ptr {
 			tStruct := reflect.New(argType.Elem()).Interface()
 			paramMap := reflect.ValueOf(param).Interface()
-			err := FillStruct(tStruct, paramMap.(map[string]interface{})) //check error
+			err := FillStruct(tStruct, paramMap.(map[string]interface{}))
 			if err != nil {
 				return reflect.Zero(argType)
 			}
@@ -132,7 +132,7 @@ func CreateParameter(param interface{}, argType reflect.Type) reflect.Value {
 		}
 		tStruct := reflect.New(argType).Interface()
 		paramMap := reflect.ValueOf(param).Interface()
-		err := FillStruct(tStruct, paramMap.(map[string]interface{})) //check error
+		err := FillStruct(tStruct, paramMap.(map[string]interface{}))
 		if err != nil {
 			return reflect.Zero(argType)
 		}
