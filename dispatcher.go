@@ -121,6 +121,15 @@ func CreateParameter(param interface{}, argType reflect.Type) reflect.Value {
 		}
 		return reflect.ValueOf(param)
 	case map[string]interface{}:
+		if argType.Kind() == reflect.Ptr {
+			tStruct := reflect.New(argType.Elem()).Interface()
+			paramMap := reflect.ValueOf(param).Interface()
+			err := FillStruct(tStruct, paramMap.(map[string]interface{})) //check error
+			if err != nil {
+				return reflect.Zero(argType)
+			}
+			return reflect.ValueOf(tStruct)
+		}
 		tStruct := reflect.New(argType).Interface()
 		paramMap := reflect.ValueOf(param).Interface()
 		err := FillStruct(tStruct, paramMap.(map[string]interface{})) //check error
