@@ -8,7 +8,7 @@ import (
 
 type SimpleServer struct {
 	listener   net.Listener
-	dispatcher *DynamicDispatcher
+	dispatcher Dispatcher
 }
 
 func CreateServer(connection string) *SimpleServer {
@@ -20,8 +20,7 @@ func CreateServer(connection string) *SimpleServer {
 	}
 	fmt.Println("Listening on " + connection)
 	s.listener = l
-	s.dispatcher = new(DynamicDispatcher)
-	s.dispatcher.registry = make(map[string]interface{})
+	s.dispatcher = CreateDispatcher()
 	return s
 }
 

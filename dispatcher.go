@@ -16,6 +16,12 @@ type DynamicDispatcher struct {
 	registry map[string]interface{}
 }
 
+func CreateDispatcher() Dispatcher {
+	dispatcher := new(DynamicDispatcher)
+	dispatcher.registry = make(map[string]interface{})
+	return dispatcher
+}
+
 func (dispatcher DynamicDispatcher) RegisterImpl(namespace string, targetImpl interface{}) {
 	dispatcher.registry[namespace] = targetImpl
 }
