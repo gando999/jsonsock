@@ -12,24 +12,47 @@ type Dispatcher interface {
 	CallFunc(targetFunc string, funcArgs []interface{}) ([]reflect.Value, error)
 }
 
+type Registry interface {
+	RegisterImpl(identifier string, impl interface{})
+	FindTargetImpl(identifier string) interface{}
+}
+
 type DynamicDispatcher struct {
-	registry map[string]interface{}
+	registry Registry
+}
+
+type NamespaceBasedRegistry struct {
+	namespaceMap map[string]interface{}
+}
+
+func CreateRegistry() Registry {
+	registry := new(NamespaceBasedRegistry)
+	registry.namespaceMap = make(map[string]interface{})
+	return registry
+}
+
+func (registry NamespaceBasedRegistry) FindTargetImpl(identifier string) interface{} {
+	return registry.namespaceMap[identifier]
+}
+
+func (registry NamespaceBasedRegistry) RegisterImpl(identifier string, impl interface{}) {
+	registry.namespaceMap[identifier] = impl
 }
 
 func CreateDispatcher() Dispatcher {
 	dispatcher := new(DynamicDispatcher)
-	dispatcher.registry = make(map[string]interface{})
+	dispatcher.registry = CreateRegistry()
 	return dispatcher
 }
 
 func (dispatcher DynamicDispatcher) RegisterImpl(namespace string, targetImpl interface{}) {
-	dispatcher.registry[namespace] = targetImpl
+	dispatcher.registry.RegisterImpl(namespace, targetImpl)
 }
 
 func (dispatcher DynamicDispatcher) CallFunc(targetFunc string, funcArgs []interface{}) ([]reflect.Value, error) {
 	s := strings.Split(targetFunc, ".")
 	namespace, funcName := s[0], s[1]
-	targetImpl := dispatcher.registry[namespace]
+	targetImpl := dispatcher.registry.FindTargetImpl(namespace)
 	return CallFuncByName(targetImpl, funcName, funcArgs...)
 }
 
