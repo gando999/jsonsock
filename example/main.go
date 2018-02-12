@@ -26,6 +26,15 @@ func (testing *Testing) SayHello(user string) string {
 	return fmt.Sprintf("Hello from %s", user)
 }
 
+func (testing *Testing) SayHelloPointer(user *string) string {
+	return fmt.Sprintf("Hello from pointer %s", *user)
+}
+
+func (testing *Testing) SayHelloFromPointer() *string {
+	s := "Hello from pointer"
+	return &s
+}
+
 func (testing *Testing) UseDomain(dom Domain) Domain {
 	dom.Number = 100
 	dom.Cost = 200
@@ -64,6 +73,8 @@ func main() {
 	go startServer()
 
 	sendRequest("testing.SayHello", []interface{}{"Donald"})
+	sendRequest("testing.SayHelloPointer", []interface{}{"Donald Pointer"})
+	sendRequest("testing.SayHelloFromPointer", []interface{}{})
 	d := Domain{256, 512, "Domain"}
 	sendRequest("testing.UseDomain", []interface{}{d})
 

@@ -111,9 +111,14 @@ func FillStruct(s interface{}, m map[string]interface{}) error {
 	return nil
 }
 
-func CreateParameter(method reflect.Value, param interface{}, argType reflect.Type) reflect.Value {
+func CreateParameter(param interface{}, argType reflect.Type) reflect.Value {
 	switch v := reflect.ValueOf(param).Interface().(type) {
 	case float64, string, int:
+		if argType.Kind() == reflect.Ptr {
+			p := reflect.New(reflect.TypeOf(v))
+			p.Elem().Set(reflect.ValueOf(param))
+			return p
+		}
 		return reflect.ValueOf(param)
 	case map[string]interface{}:
 		tStruct := reflect.New(argType).Interface()
@@ -142,12 +147,12 @@ func CallFuncByName(targetImpl interface{}, funcName string, params ...interface
 			tList := reflect.Indirect(reflect.New(argType))
 			paramList := reflect.ValueOf(param).Interface().([]interface{})
 			for _, sliceElement := range paramList {
-				tList.Set(reflect.Append(tList, CreateParameter(m, sliceElement, argType.Elem())))
+				tList.Set(reflect.Append(tList, CreateParameter(sliceElement, argType.Elem())))
 			}
 			in[i] = tList
 		default:
 			argType := m.Type().In(i)
-			in[i] = CreateParameter(m, param, argType)
+			in[i] = CreateParameter(param, argType)
 		}
 	}
 	out = m.Call(in)
