@@ -42,9 +42,15 @@ func (testing *Testing) UseDomain(dom Domain) Domain {
 }
 
 func (testing *Testing) UseDomainPointer(dom *Domain) Domain {
-	dom.Number = 100
-	dom.Cost = 200
+	dom.Number = 10000
+	dom.Cost = 20000
 	return *dom
+}
+
+func (testing *Testing) UseDomainReturnPointer(dom *Domain) *Domain {
+	dom.Number = 90000
+	dom.Cost = 80000
+	return dom
 }
 
 func (testing *Testing) UseSlice(someStrings []string) string {
@@ -84,6 +90,7 @@ func main() {
 	d := Domain{256, 512, "Domain"}
 	sendRequest("testing.UseDomain", []interface{}{d})
 	sendRequest("testing.UseDomainPointer", []interface{}{d})
+	sendRequest("testing.UseDomainReturnPointer", []interface{}{d})
 
 	m := make(map[string]interface{})
 	m["Number"] = 55
