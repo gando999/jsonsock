@@ -36,6 +36,11 @@ func (simpleServer *SimpleServer) Start() {
 	}
 }
 
+func (simpleServer *SimpleServer) Stop() {
+	fmt.Println("Stopping server")
+	simpleServer.listener.Close()
+}
+
 func (simpleServer *SimpleServer) Register(namespace string, targetImpl interface{}) {
 	simpleServer.dispatcher.RegisterImpl(namespace, targetImpl)
 }
